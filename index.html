@@ -1,0 +1,1112 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Инженерия требований: От Бизнеса к Системе (BA vs SA)</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'sans-serif'],
+            mono: ['JetBrains Mono', 'monospace'],
+          },
+          colors: {
+            brand: {
+              50: '#eef2ff',
+              100: '#e0e7ff',
+              500: '#6366f1',
+              600: '#4f46e5',
+              700: '#4338ca',
+              900: '#312e81',
+            },
+            ba: {
+              light: '#fef3c7',
+              badge: '#d97706',
+              bg: '#fffbeb',
+              border: '#fde68a'
+            },
+            sa: {
+              light: '#e0f2fe',
+              badge: '#0284c7',
+              bg: '#f0f9ff',
+              border: '#bae6fd'
+            }
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    body {
+      font-family: 'Inter', sans-serif;
+    }
+    .slide-transition {
+      transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    /* Custom scrollbars */
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #f1f5f9;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #cbd5e1;
+      border-radius: 9999px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #94a3b8;
+    }
+  </style>
+</head>
+<body class="bg-slate-900 text-slate-100 min-h-screen flex flex-col justify-between selection:bg-indigo-500 selection:text-white">
+
+  <header class="h-16 border-b border-slate-800 bg-slate-950/80 backdrop-blur px-6 flex items-center justify-between z-30">
+    <div class="flex items-center space-x-3">
+      <div class="w-9 h-9 rounded-xl bg-gradient-to-tr from-indigo-600 to-cyan-400 flex items-center justify-center font-bold text-white shadow-lg shadow-indigo-500/20">
+        RE
+      </div>
+      <div>
+        <h1 class="text-sm font-semibold tracking-wide text-white">Инженерия требований: От Бизнеса к Архитектуре</h1>
+        <p class="text-xs text-slate-400">Симбиоз BA & SA • ISO/IEC/IEEE 29148 • BABOK® v3 • DDD</p>
+      </div>
+    </div>
+
+    <!-- Controls & Indicators -->
+    <div class="flex items-center space-x-4">
+      <div class="hidden md:flex items-center bg-slate-900 border border-slate-800 rounded-lg p-1 text-xs">
+        <button id="filter-all" onclick="setRoleFilter('all')" class="px-2.5 py-1 rounded font-medium transition bg-indigo-600 text-white">Все слайды</button>
+        <button id="filter-ba" onclick="setRoleFilter('ba')" class="px-2.5 py-1 rounded font-medium transition text-amber-300 hover:text-white">Только BA</button>
+        <button id="filter-sa" onclick="setRoleFilter('sa')" class="px-2.5 py-1 rounded font-medium transition text-sky-300 hover:text-white">Только SA</button>
+      </div>
+
+      <div class="text-xs font-mono text-slate-400 bg-slate-900 border border-slate-800 px-3 py-1.5 rounded-lg flex items-center gap-1">
+        <span>Слайд</span>
+        <span id="current-slide-num" class="text-indigo-400 font-bold">1</span>
+        <span>/</span>
+        <span id="total-slides-num">10</span>
+      </div>
+
+      <button onclick="toggleSpeakerNotes()" title="Заметки спикера и цитаты" class="p-2 rounded-lg bg-slate-900 border border-slate-800 text-slate-300 hover:text-white hover:border-slate-700 transition flex items-center gap-1.5 text-xs">
+        <svg class="w-4 h-4 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/></svg>
+        <span class="hidden sm:inline">Заметки / Литература</span>
+      </button>
+
+      <button onclick="toggleFullscreen()" class="p-2 rounded-lg bg-slate-900 border border-slate-800 text-slate-300 hover:text-white hover:border-slate-700 transition">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5v-4m0 4h-4m4 0l-5-5"/></svg>
+      </button>
+    </div>
+  </header>
+
+  <main class="flex-1 flex overflow-hidden relative">
+    
+    <!-- Slides Stage -->
+    <div id="slides-container" class="flex-1 overflow-y-auto p-4 md:p-8 flex items-center justify-center">
+      <div id="slide-stage" class="w-full max-w-6xl min-h-[580px] bg-slate-950/70 border border-slate-800/80 rounded-2xl shadow-2xl p-6 md:p-10 flex flex-col justify-between slide-transition">
+        <!-- Content will be injected dynamically by JavaScript -->
+      </div>
+    </div>
+
+    <!-- Collapsible Speaker Notes Sidebar -->
+    <aside id="speaker-notes-panel" class="w-96 border-l border-slate-800 bg-slate-950/95 backdrop-blur p-6 flex flex-col justify-between hidden transition-all duration-300 z-20">
+      <div class="overflow-y-auto pr-1">
+        <div class="flex items-center justify-between pb-3 border-b border-slate-800 mb-4">
+          <div class="flex items-center gap-2 text-amber-400 font-semibold text-sm">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+            <span>Заметки спикера & Академ-база</span>
+          </div>
+          <button onclick="toggleSpeakerNotes()" class="text-slate-400 hover:text-white">&times;</button>
+        </div>
+        <div id="notes-content" class="text-sm space-y-4 text-slate-300 leading-relaxed">
+          <!-- Dynamic Notes -->
+        </div>
+      </div>
+      <div class="pt-4 border-t border-slate-800/80 text-[11px] text-slate-400 flex items-center justify-between">
+        <span>Источники: BABOK v3, Захман, Вигерс</span>
+        <span class="text-indigo-400">Strict Engineering</span>
+      </div>
+    </aside>
+  </main>
+
+  <footer class="h-16 border-t border-slate-800 bg-slate-950 px-6 flex items-center justify-between">
+    <div class="flex items-center gap-2">
+      <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-amber-500/10 text-amber-300 border border-amber-500/20">
+        <span class="w-1.5 h-1.5 rounded-full bg-amber-400"></span> BA: Проблема & Ценность
+      </span>
+      <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-sky-500/10 text-sky-300 border border-sky-500/20">
+        <span class="w-1.5 h-1.5 rounded-full bg-sky-400"></span> SA: Логика & Решение
+      </span>
+    </div>
+
+    <!-- Slide progress line indicator -->
+    <div class="hidden lg:flex items-center gap-1.5 flex-1 max-w-xs mx-6" id="progress-dots">
+      <!-- Dots inserted via JS -->
+    </div>
+
+    <div class="flex items-center gap-2">
+      <button id="btn-prev" onclick="prevSlide()" class="px-4 py-2 rounded-xl bg-slate-900 border border-slate-800 text-slate-200 hover:bg-slate-800 hover:text-white transition flex items-center gap-2 text-xs font-semibold disabled:opacity-30 disabled:pointer-events-none">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
+        <span>Назад</span>
+      </button>
+      <button id="btn-next" onclick="nextSlide()" class="px-5 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-semibold transition flex items-center gap-2 text-xs shadow-lg shadow-indigo-600/30 disabled:opacity-30 disabled:pointer-events-none">
+        <span>Далее</span>
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+      </button>
+    </div>
+  </footer>
+
+  <script>
+    const slidesData = [
+      {
+        id: 1,
+        title: "От Бизнес-требований к Системному проектированию",
+        subtitle: "Сквозная инженерия требований: симбиоз Бизнес-аналитика (BA) и Системного аналитика (SA)",
+        roleCategory: "both",
+        badge: "Введение и Концепт",
+        render: () => `
+          <div class="space-y-8 my-auto">
+            <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-indigo-500/10 border border-indigo-500/30 text-indigo-300 text-xs font-semibold">
+              <span>🚀 Методологический базис: BABOK v3, ISO 29148, MSF, DDD</span>
+            </div>
+            <div class="space-y-3">
+              <h2 class="text-3xl md:text-5xl font-extrabold text-white tracking-tight leading-tight">
+                Инженерия требований:<br>
+                <span class="bg-gradient-to-r from-indigo-400 via-sky-300 to-teal-300 bg-clip-text text-transparent">
+                  От стратегического «Зачем» к алгоритмическому «Как»
+                </span>
+              </h2>
+              <p class="text-slate-400 text-base md:text-lg max-w-3xl leading-relaxed">
+                Практическое руководство по трансформации неопределенных потребностей стейкхолдеров в строгие системные спецификации, архитектурные контракты и структуры данных.
+              </p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 pt-4">
+              <div class="p-5 rounded-xl bg-slate-900/80 border border-amber-500/30 relative overflow-hidden">
+                <div class="absolute top-0 right-0 w-24 h-24 bg-amber-500/10 rounded-full blur-xl pointer-events-none"></div>
+                <div class="flex items-center justify-between mb-2">
+                  <span class="text-xs font-bold uppercase tracking-wider text-amber-400">Бизнес-аналитик (BA)</span>
+                  <span class="text-[11px] px-2 py-0.5 rounded bg-amber-400/10 text-amber-300 border border-amber-400/20">Problem Space</span>
+                </div>
+                <h4 class="text-base font-semibold text-white mb-1">Фокус: Бизнес-ценность и процессы</h4>
+                <p class="text-xs text-slate-400 leading-relaxed">
+                  Отвечает за выявление проблемы, формулирование бизнес-требований (BR), правил (BRULE), оптимизацию сквозных процессов и защиту интересов заказчика (Концепция BVISION).
+                </p>
+              </div>
+
+              <div class="p-5 rounded-xl bg-slate-900/80 border border-sky-500/30 relative overflow-hidden">
+                <div class="absolute top-0 right-0 w-24 h-24 bg-sky-500/10 rounded-full blur-xl pointer-events-none"></div>
+                <div class="flex items-center justify-between mb-2">
+                  <span class="text-xs font-bold uppercase tracking-wider text-sky-400">Системный аналитик (SA)</span>
+                  <span class="text-[11px] px-2 py-0.5 rounded bg-sky-400/10 text-sky-300 border border-sky-400/20">Solution Space</span>
+                </div>
+                <h4 class="text-base font-semibold text-white mb-1">Фокус: Логика системы и архитектура</h4>
+                <p class="text-xs text-slate-400 leading-relaxed">
+                  Трансформирует процессы в системные Use Case, проектирует поведение, модели данных (ERD), API-контракты, машины состояний и декомпозирует требования в микросервисы.
+                </p>
+              </div>
+            </div>
+          </div>
+        `,
+        notes: `
+          <p><strong>Контекст темы:</strong> Согласно книге А. Цветкова «Теория и практика бизнес-анализа в ИТ», а также MSF и BABOK®, разработка ПО часто страдает от разрыва между бизнес-заказчиками и разработчиками («антипаттерн испорченного телефона»).</p>
+          <p class="mt-2"><strong>Ролевое разделение:</strong></p>
+          <ul class="list-disc pl-4 space-y-1 text-xs">
+            <li><strong>БА (Business Analyst)</strong> — «внутренний заказчик» команды, адвокат пользователя и бизнеса, формулирующий BVISION.</li>
+            <li><strong>СА (System Analyst)</strong> — мост к технической реализации, формализатор логики ПО, моделей данных и интерфейсов.</li>
+          </ul>
+        `
+      },
+      {
+        id: 2,
+        title: "Разделение ролей: Матрица Захмана и MSF",
+        subtitle: "Кто, где и на каком уровне абстракции принимает решения?",
+        roleCategory: "both",
+        badge: "Архитектурные фреймворки",
+        render: () => `
+          <div class="space-y-5 my-auto">
+            <div class="text-xs text-slate-400 max-w-3xl">
+              В классической онтологии <strong>Zachman Framework</strong> и методологии <strong>Microsoft Solutions Framework (MSF)</strong> четко фиксируется переход ответственности от бизнес-видения к инженерной логике.
+            </div>
+
+            <!-- Zachman Rows Visual Comparison -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <!-- Zachman Row 1 & 2 (BA) -->
+              <div class="md:col-span-1 p-4 rounded-xl bg-amber-950/20 border border-amber-500/30 flex flex-col justify-between">
+                <div>
+                  <div class="flex items-center justify-between mb-3">
+                    <span class="text-xs font-bold uppercase text-amber-400">Уровень 1–2: Захман</span>
+                    <span class="px-2 py-0.5 rounded text-[10px] bg-amber-500/20 text-amber-300">Зона BA</span>
+                  </div>
+                  <h4 class="text-sm font-semibold text-white mb-2">Scope & Business Concepts</h4>
+                  <ul class="space-y-2 text-xs text-slate-300">
+                    <li class="flex items-start gap-1.5"><span class="text-amber-400 font-bold">•</span> <strong>ЧТО:</strong> Бизнес-сущности и термины (Глоссарий)</li>
+                    <li class="flex items-start gap-1.5"><span class="text-amber-400 font-bold">•</span> <strong>КАК:</strong> Бизнес-процессы As-Is / To-Be (BPMN)</li>
+                    <li class="flex items-start gap-1.5"><span class="text-amber-400 font-bold">•</span> <strong>КТО:</strong> Организационные звенья, стейкхолдеры</li>
+                    <li class="flex items-start gap-1.5"><span class="text-amber-400 font-bold">•</span> <strong>ЗАЧЕМ:</strong> Бизнес-цели, KPI, ROI, BVISION</li>
+                  </ul>
+                </div>
+                <div class="mt-4 pt-3 border-t border-amber-500/20 text-[11px] text-amber-300/80">
+                  Результат: Комплект документов BVISION, реестр запросов ЗЛ (STKR), бизнес-правила (BRULE).
+                </div>
+              </div>
+
+              <!-- Handoff Point / Collaboration -->
+              <div class="md:col-span-1 p-4 rounded-xl bg-indigo-950/20 border border-indigo-500/30 flex flex-col justify-between">
+                <div>
+                  <div class="flex items-center justify-between mb-3">
+                    <span class="text-xs font-bold uppercase text-indigo-400">Шлюз передачи</span>
+                    <span class="px-2 py-0.5 rounded text-[10px] bg-indigo-500/20 text-indigo-300">Коллаборация</span>
+                  </div>
+                  <h4 class="text-sm font-semibold text-white mb-2">Handoff & Авторский надзор</h4>
+                  <p class="text-xs text-slate-300 leading-relaxed mb-3">
+                    БА не «выбрасывает ТЗ через стену». Согласно рекомендациям BABOK (RADD) и Цветкова, БА осуществляет <strong>авторский надзор</strong>, валидируя понимание системы системным аналитиком.
+                  </p>
+                  <div class="p-2.5 rounded-lg bg-slate-900 border border-slate-800 text-[11px] text-slate-300">
+                    <strong>Инструмент синхронизации:</strong> Матрица трассируемости требований (RTM) и User Story Mapping.
+                  </div>
+                </div>
+                <div class="mt-4 pt-3 border-t border-indigo-500/20 text-[11px] text-indigo-300/80">
+                  Совместное ревью: Устранение противоречий между STKR и TVISION.
+                </div>
+              </div>
+
+              <!-- Zachman Row 3 (SA) -->
+              <div class="md:col-span-1 p-4 rounded-xl bg-sky-950/20 border border-sky-500/30 flex flex-col justify-between">
+                <div>
+                  <div class="flex items-center justify-between mb-3">
+                    <span class="text-xs font-bold uppercase text-sky-400">Уровень 3: Захман</span>
+                    <span class="px-2 py-0.5 rounded text-[10px] bg-sky-500/20 text-sky-300">Зона SA</span>
+                  </div>
+                  <h4 class="text-sm font-semibold text-white mb-2">System Logic & Models</h4>
+                  <ul class="space-y-2 text-xs text-slate-300">
+                    <li class="flex items-start gap-1.5"><span class="text-sky-400 font-bold">•</span> <strong>ЧТО:</strong> Логические модели данных (ERD, схемы БД)</li>
+                    <li class="flex items-start gap-1.5"><span class="text-sky-400 font-bold">•</span> <strong>КАК:</strong> Use Cases, Sequence, Activity, State Machines</li>
+                    <li class="flex items-start gap-1.5"><span class="text-sky-400 font-bold">•</span> <strong>КТО:</strong> Системные акторы, роли доступа, API</li>
+                    <li class="flex items-start gap-1.5"><span class="text-sky-400 font-bold">•</span> <strong>ЗАЧЕМ:</strong> Технические ограничения (TVISION, NFR)</li>
+                  </ul>
+                </div>
+                <div class="mt-4 pt-3 border-t border-sky-500/20 text-[11px] text-sky-300/80">
+                  Результат: SRS (Спецификация требований к ПО), контракты OpenAPI, очереди Kafka.
+                </div>
+              </div>
+            </div>
+
+            <!-- RACI Note -->
+            <div class="p-3 rounded-lg bg-slate-900 border border-slate-800 flex items-center justify-between text-xs">
+              <span class="text-slate-400"><strong>MSF Принцип равноправия:</strong> БА защищает потребности пользователя; СА совместно с Архитектором защищает целостность технического решения.</span>
+              <span class="text-indigo-400 font-mono text-[11px]">MSF Team Model</span>
+            </div>
+          </div>
+        `,
+        notes: `
+          <p><strong>Матрица Захмана (John Zachman Enterprise Architecture):</strong></p>
+          <ul class="list-disc pl-4 space-y-1 text-xs">
+            <li>Строка 1 (Planner) и Строка 2 (Owner) — это поле деятельности <strong>бизнес-аналитика</strong>. В этих ячейках формулируются цели, участники, бизнес-процессы и правила бизнеса.</li>
+            <li>Строка 3 (Designer) — «Системная логика». Здесь архитектор и <strong>системный аналитик</strong> трансформируют бизнес-логику в проектные модели ИС (структуры реляционных БД, протоколы обмена, спецификации функций).</li>
+          </ul>
+          <p class="mt-2"><strong>Важное из книги Цветкова:</strong> БА выполняет функцию авторского надзора на протяжении всего ЖЦ (ГОСТ Р ИСО/МЭК 12207 / RUP).</p>
+        `
+      },
+      {
+        id: 3,
+        title: "Алгоритм сквозного перехода: 7 шагов (Вопрос 1)",
+        subtitle: "Инженерная цепочка трассировки от проблемы до контракта API",
+        roleCategory: "both",
+        badge: "Алгоритм трансформации",
+        render: () => `
+          <div class="space-y-4 my-auto">
+            <div class="flex items-center justify-between text-xs text-slate-400">
+              <span>Сквозной процесс декомпозиции по Вигерсу и BABOK v3 (RADD)</span>
+              <span class="font-mono text-indigo-400">Traceability Chain: BR → BRULE → UC → FR → NFR</span>
+            </div>
+
+            <!-- 7-Step Interactive Flow -->
+            <div class="grid grid-cols-1 md:grid-cols-7 gap-2 text-xs">
+              
+              <div class="p-3 rounded-xl bg-amber-950/20 border border-amber-500/30 flex flex-col justify-between">
+                <div>
+                  <span class="w-5 h-5 rounded-full bg-amber-500/20 text-amber-300 font-bold flex items-center justify-center text-[10px] mb-2">1</span>
+                  <div class="font-semibold text-white mb-1">Бизнес-цель</div>
+                  <p class="text-[11px] text-slate-400 leading-tight">Проблема, метрика успеха, KPI / ROI (Vision).</p>
+                </div>
+                <div class="mt-2 pt-2 border-t border-amber-500/20 font-mono text-[9px] text-amber-400">ОТВ: BA</div>
+              </div>
+
+              <div class="p-3 rounded-xl bg-amber-950/20 border border-amber-500/30 flex flex-col justify-between">
+                <div>
+                  <span class="w-5 h-5 rounded-full bg-amber-500/20 text-amber-300 font-bold flex items-center justify-center text-[10px] mb-2">2</span>
+                  <div class="font-semibold text-white mb-1">BPMN TO-BE</div>
+                  <p class="text-[11px] text-slate-400 leading-tight">Процесс, дорожки акторов и бизнес-правила (BRULE).</p>
+                </div>
+                <div class="mt-2 pt-2 border-t border-amber-500/20 font-mono text-[9px] text-amber-400">ОТВ: BA</div>
+              </div>
+
+              <div class="p-3 rounded-xl bg-indigo-950/20 border border-indigo-500/30 flex flex-col justify-between">
+                <div>
+                  <span class="w-5 h-5 rounded-full bg-indigo-500/20 text-indigo-300 font-bold flex items-center justify-center text-[10px] mb-2">3</span>
+                  <div class="font-semibold text-white mb-1">Пользователь</div>
+                  <p class="text-[11px] text-slate-400 leading-tight">User Stories / Прецеденты Коберна (Цели актора).</p>
+                </div>
+                <div class="mt-2 pt-2 border-t border-indigo-500/20 font-mono text-[9px] text-indigo-300">BA + SA</div>
+              </div>
+
+              <div class="p-3 rounded-xl bg-sky-950/20 border border-sky-500/30 flex flex-col justify-between">
+                <div>
+                  <span class="w-5 h-5 rounded-full bg-sky-500/20 text-sky-300 font-bold flex items-center justify-center text-[10px] mb-2">4</span>
+                  <div class="font-semibold text-white mb-1">Контекст ИС</div>
+                  <p class="text-[11px] text-slate-400 leading-tight">C4 Context, внешние интеграции, потоки данных.</p>
+                </div>
+                <div class="mt-2 pt-2 border-t border-sky-500/20 font-mono text-[9px] text-sky-400">ОТВ: SA</div>
+              </div>
+
+              <div class="p-3 rounded-xl bg-sky-950/20 border border-sky-500/30 flex flex-col justify-between">
+                <div>
+                  <span class="w-5 h-5 rounded-full bg-sky-500/20 text-sky-300 font-bold flex items-center justify-center text-[10px] mb-2">5</span>
+                  <div class="font-semibold text-white mb-1">Системные ФТ</div>
+                  <p class="text-[11px] text-slate-400 leading-tight">Входы, выходы, алгоритмы валидации, состояния.</p>
+                </div>
+                <div class="mt-2 pt-2 border-t border-sky-500/20 font-mono text-[9px] text-sky-400">ОТВ: SA</div>
+              </div>
+
+              <div class="p-3 rounded-xl bg-sky-950/20 border border-sky-500/30 flex flex-col justify-between">
+                <div>
+                  <span class="w-5 h-5 rounded-full bg-sky-500/20 text-sky-300 font-bold flex items-center justify-center text-[10px] mb-2">6</span>
+                  <div class="font-semibold text-white mb-1">NFR / Качество</div>
+                  <p class="text-[11px] text-slate-400 leading-tight">ISO 25010: Latency, RPS, Security, SLA.</p>
+                </div>
+                <div class="mt-2 pt-2 border-t border-sky-500/20 font-mono text-[9px] text-sky-400">ОТВ: SA</div>
+              </div>
+
+              <div class="p-3 rounded-xl bg-teal-950/20 border border-teal-500/30 flex flex-col justify-between">
+                <div>
+                  <span class="w-5 h-5 rounded-full bg-teal-500/20 text-teal-300 font-bold flex items-center justify-center text-[10px] mb-2">7</span>
+                  <div class="font-semibold text-white mb-1">RTM Матрица</div>
+                  <p class="text-[11px] text-slate-400 leading-tight">Сквозная трассировка: BR → ФТ → API → Тесты.</p>
+                </div>
+                <div class="mt-2 pt-2 border-t border-teal-500/20 font-mono text-[9px] text-teal-400">BA & SA</div>
+              </div>
+
+            </div>
+
+            <!-- Concrete Example Flow -->
+            <div class="p-4 rounded-xl bg-slate-900 border border-slate-800 space-y-2">
+              <span class="text-xs font-semibold text-indigo-300 uppercase tracking-wider">Пример сквозной цепочки: Модуль Возврата Товара</span>
+              <div class="text-xs text-slate-300 grid grid-cols-1 md:grid-cols-4 gap-3 pt-1">
+                <div class="p-2 rounded bg-slate-950/60 border border-slate-800">
+                  <span class="text-amber-400 font-bold block text-[10px]">BR (Бизнес)</span>
+                  «Сократить срок возврата средств клиенту с 7 дней до 24 часов»
+                </div>
+                <div class="p-2 rounded bg-slate-950/60 border border-slate-800">
+                  <span class="text-amber-300 font-bold block text-[10px]">BRULE (Правило)</span>
+                  «Возврат возможен в течение 14 дней при сохранении товарного вида»
+                </div>
+                <div class="p-2 rounded bg-slate-950/60 border border-slate-800">
+                  <span class="text-sky-300 font-bold block text-[10px]">Use Case (Пользователь)</span>
+                  «Покупатель подает заявку на возврат через мобильное приложение»
+                </div>
+                <div class="p-2 rounded bg-slate-950/60 border border-slate-800">
+                  <span class="text-sky-400 font-bold block text-[10px]">System FR / API (Система)</span>
+                  «Сервис валидирует delivery_date <= 14d, шлет POST /api/v1/refunds с Idempotency-Key»
+                </div>
+              </div>
+            </div>
+          </div>
+        `,
+        notes: `
+          <p><strong>Инженерная цепочка трассируемости:</strong></p>
+          <p>В методологии К. Вигерса и стандарте ISO 29148 запрещено писать требования изолированно. Если функциональное требование (FR) не трассируется к бизнес-требованию (BR), это <em>Золотое покрытие (Gold Plating)</em> — разработка бесполезной функциональности.</p>
+          <p class="mt-2"><strong>Ролевой стык:</strong> Шаг 3 (User Stories / Use Cases) является границей передачи эстафеты от БА к СА.</p>
+        `
+      },
+      {
+        id: 4,
+        title: "Граница между Бизнес- и Системным требованием (Вопрос 2)",
+        subtitle: "Problem Domain vs Solution Domain: Тест «Уберите компьютер»",
+        roleCategory: "both",
+        badge: "Критерии демаркации",
+        render: () => `
+          <div class="space-y-4 my-auto">
+            <!-- Test Definition -->
+            <div class="p-4 rounded-xl bg-gradient-to-r from-amber-500/10 via-slate-900 to-sky-500/10 border border-slate-700 flex items-start gap-4">
+              <div class="w-10 h-10 rounded-lg bg-indigo-600/20 text-indigo-400 flex items-center justify-center font-bold text-lg flex-shrink-0">
+                💡
+              </div>
+              <div class="text-xs space-y-1">
+                <h4 class="font-bold text-sm text-white">Инженерный тест: «Уберите компьютер и весь софт из цепочки»</h4>
+                <p class="text-slate-300 leading-relaxed">
+                  Если требование продолжает действовать, даже когда сотрудники ведут учет на бумаге в амбарной книге, — это <strong>бизнес-требование или бизнес-правило</strong>. Если же формулировка теряет смысл без IT-инфраструктуры, БД и протоколов — это <strong>системное требование</strong>.
+                </p>
+              </div>
+            </div>
+
+            <!-- Comparison Table -->
+            <div class="overflow-x-auto">
+              <table class="w-full text-left text-xs border-collapse">
+                <thead>
+                  <tr class="border-b border-slate-800 text-slate-400 bg-slate-950/40">
+                    <th class="p-3">Критерий</th>
+                    <th class="p-3 text-amber-300 bg-amber-950/10">Бизнес-требование (Зона BA)</th>
+                    <th class="p-3 text-sky-300 bg-sky-950/10">Системное требование (Зона SA)</th>
+                  </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-800/60 text-slate-300">
+                  <tr>
+                    <td class="p-3 font-semibold text-white">Ключевой вопрос</td>
+                    <td class="p-3 text-amber-200 bg-amber-950/5">«Зачем?» и «Какая выгода бизнесу?»</td>
+                    <td class="p-3 text-sky-200 bg-sky-950/5">«Что именно и как вычисляет/хранит ПО?»</td>
+                  </tr>
+                  <tr>
+                    <td class="p-3 font-semibold text-white">Субъект требования</td>
+                    <td class="p-3 bg-amber-950/5">Организация, отдел, клиент, регулятор</td>
+                    <td class="p-3 bg-sky-950/5">Подсистема, микросервис, БД, шина событий</td>
+                  </tr>
+                  <tr>
+                    <td class="p-3 font-semibold text-white">Технологичность</td>
+                    <td class="p-3 bg-amber-950/5">Технологически нейтрально (без API, SQL, JSON)</td>
+                    <td class="p-3 bg-sky-950/5">Технологически строго (контракты, форматы, валидации)</td>
+                  </tr>
+                  <tr>
+                    <td class="p-3 font-semibold text-white">Пример Антифрода</td>
+                    <td class="p-3 bg-amber-950/5">«Снизить мошеннические переводы свыше 50 000 руб»</td>
+                    <td class="p-3 bg-sky-950/5">«Если amount > 50K и pwd_reset < 24h: сгенерировать 6-значный OTP с TTL 180s»</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+
+            <!-- Anti-pattern Warning -->
+            <div class="p-3 rounded-lg bg-red-950/20 border border-red-500/30 text-xs text-red-200 flex items-center gap-2">
+              <span class="font-bold text-red-400">⚠️ Частая ошибка:</span>
+              <span>Включение в бизнес-требования интерфейсных деталей («Сделать синюю кнопку в правом углу») лишает системного аналитика и архитектора свободы проектирования оптимального решения.</span>
+            </div>
+          </div>
+        `,
+        notes: `
+          <p><strong>Problem vs Solution Domain:</strong></p>
+          <p>Карл Вигерс подчеркивает, что бизнес-заказчик часто приходит не с проблемой, а с уже «придуманным решением» (Solution Bias). Задача бизнес-аналитика — докопаться до реальной корневой потребности (техники 5 Why, корневой анализ причин по BABOK v3).</p>
+          <p class="mt-2">Системный аналитик подключается тогда, когда бизнес-правило (BRULE) зафиксировано, и начинает проектировать алгоритмическое поведение системы.</p>
+        `
+      },
+      {
+        id: 5,
+        title: "Очередность артефактов: Что описывать первым? (Вопрос 3)",
+        subtitle: "От семантики предметной области к контрактам интерфейсов",
+        roleCategory: "both",
+        badge: "Порядок проектирования",
+        render: () => `
+          <div class="space-y-4 my-auto">
+            <div class="text-xs text-slate-400">
+              Попытка начать писать спецификацию сразу с Use Case или схем БД неизбежно приводит к переделкам. Современная методология (RUP, ICONIX, DDD) задает четкий порядок артефактов.
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-6 gap-3 text-xs">
+              <!-- Artifact 1 -->
+              <div class="p-3 rounded-xl bg-slate-900 border border-amber-500/40">
+                <span class="text-amber-400 font-mono font-bold text-sm block mb-1">01</span>
+                <span class="px-1.5 py-0.5 rounded text-[9px] bg-amber-500/20 text-amber-300 font-bold">Зона BA</span>
+                <h4 class="font-semibold text-white mt-2 mb-1">Глоссарий (DDD)</h4>
+                <p class="text-[11px] text-slate-400">Единый язык (Ubiquitous Language). Фиксация ключевых терминов и понятий.</p>
+              </div>
+
+              <!-- Artifact 2 -->
+              <div class="p-3 rounded-xl bg-slate-900 border border-amber-500/40">
+                <span class="text-amber-400 font-mono font-bold text-sm block mb-1">02</span>
+                <span class="px-1.5 py-0.5 rounded text-[9px] bg-amber-500/20 text-amber-300 font-bold">Зона BA</span>
+                <h4 class="font-semibold text-white mt-2 mb-1">BPMN Схема</h4>
+                <p class="text-[11px] text-slate-400">Сквозной бизнес-процесс To-Be, дорожки (Swimlanes), точки автоматизации.</p>
+              </div>
+
+              <!-- Artifact 3 -->
+              <div class="p-3 rounded-xl bg-slate-900 border border-indigo-500/40">
+                <span class="text-indigo-400 font-mono font-bold text-sm block mb-1">03</span>
+                <span class="px-1.5 py-0.5 rounded text-[9px] bg-indigo-500/20 text-indigo-300 font-bold">BA + SA</span>
+                <h4 class="font-semibold text-white mt-2 mb-1">Use Cases</h4>
+                <p class="text-[11px] text-slate-400">Прецеденты Коберна: цели акторов, основной поток, альтернативы, эксепшены.</p>
+              </div>
+
+              <!-- Artifact 4 -->
+              <div class="p-3 rounded-xl bg-slate-900 border border-sky-500/40">
+                <span class="text-sky-400 font-mono font-bold text-sm block mb-1">04</span>
+                <span class="px-1.5 py-0.5 rounded text-[9px] bg-sky-500/20 text-sky-300 font-bold">Зона SA</span>
+                <h4 class="font-semibold text-white mt-2 mb-1">Модель данных</h4>
+                <p class="text-[11px] text-slate-400">Логическая ER-диаграмма, атрибуты, связи (1:N, M:N), словарь данных.</p>
+              </div>
+
+              <!-- Artifact 5 -->
+              <div class="p-3 rounded-xl bg-slate-900 border border-sky-500/40">
+                <span class="text-sky-400 font-mono font-bold text-sm block mb-1">05</span>
+                <span class="px-1.5 py-0.5 rounded text-[9px] bg-sky-500/20 text-sky-300 font-bold">Зона SA</span>
+                <h4 class="font-semibold text-white mt-2 mb-1">Матрицы & FSM</h4>
+                <p class="text-[11px] text-slate-400">UML State Machine (жизненный цикл), Decision Tables (таблицы решений).</p>
+              </div>
+
+              <!-- Artifact 6 -->
+              <div class="p-3 rounded-xl bg-slate-900 border border-sky-500/40">
+                <span class="text-sky-400 font-mono font-bold text-sm block mb-1">06</span>
+                <span class="px-1.5 py-0.5 rounded text-[9px] bg-sky-500/20 text-sky-300 font-bold">Зона SA</span>
+                <h4 class="font-semibold text-white mt-2 mb-1">SRS & API</h4>
+                <p class="text-[11px] text-slate-400">UML Sequence, спецификации OpenAPI, gRPC, нефункциональные требования.</p>
+              </div>
+            </div>
+
+            <!-- Rule of Thumb Callout -->
+            <div class="p-3.5 rounded-xl bg-slate-900/90 border border-slate-800 text-xs flex items-center justify-between">
+              <span class="text-slate-300">
+                <strong>Правило:</strong> Сначала смысл и правила бизнеса (БА), затем взаимодействие актора и системы (Use Case), и лишь затем структуры данных и протоколы (СА).
+              </span>
+              <span class="font-mono text-indigo-400 text-[11px]">Domain-Driven Architecture</span>
+            </div>
+          </div>
+        `,
+        notes: `
+          <p><strong>Обоснование очередности (по Алистеру Коберну и Эрику Эвансу):</strong></p>
+          <ul class="list-disc pl-4 space-y-1 text-xs">
+            <li><strong>Почему глоссарий первый?</strong> Без четкого определения понятий разработчики и стейкхолдеры используют одни и те же слова в разных значениях (например, «Пользователь» vs «Учетная запись» vs «Клиент»).</li>
+            <li><strong>Почему данные после Use Case?</strong> Поведение порождает структуру данных. Проектировать таблицы БД до понимания того, как система будет использоваться, — классическая ошибка «data-first», ведущая к избыточным и неиспользуемым полям.</li>
+          </ul>
+        `
+      },
+      {
+        id: 6,
+        title: "Синтаксис формулировок требований (Вопрос 4)",
+        subtitle: "ISO/IEC/IEEE 29148, паттерны EARS и BDD/Gherkin",
+        roleCategory: "sa",
+        badge: "Стандарты формулировок",
+        render: () => `
+          <div class="space-y-4 my-auto">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <!-- ISO Structure & EARS Patterns -->
+              <div class="space-y-3">
+                <div class="p-3.5 rounded-xl bg-slate-900 border border-sky-500/30">
+                  <div class="flex items-center justify-between mb-2">
+                    <span class="text-xs font-bold text-sky-400 uppercase">Формула ISO 29148</span>
+                    <span class="text-[10px] text-slate-400 font-mono">Shall / Must</span>
+                  </div>
+                  <div class="p-2.5 rounded bg-slate-950 font-mono text-[11px] text-sky-200 border border-slate-800">
+                    [Предусловие] + [Субъект/Система] + [Модальность «должна»] + [Действие] + [Объект] + [Параметр/Ограничение]
+                  </div>
+                </div>
+
+                <div class="p-3.5 rounded-xl bg-slate-900 border border-slate-800">
+                  <span class="text-xs font-bold text-white uppercase block mb-2">5 Паттернов EARS (Alistair Mavin)</span>
+                  <div class="space-y-1.5 text-xs text-slate-300 font-mono">
+                    <div class="p-1.5 rounded bg-slate-950/60 border border-slate-800/80">
+                      <span class="text-indigo-400 font-bold">Event:</span> Когда [триггер], система должна [действие]
+                    </div>
+                    <div class="p-1.5 rounded bg-slate-950/60 border border-slate-800/80">
+                      <span class="text-amber-400 font-bold">State:</span> Пока [система в состоянии], система должна [действие]
+                    </div>
+                    <div class="p-1.5 rounded bg-slate-950/60 border border-slate-800/80">
+                      <span class="text-red-400 font-bold">Error:</span> Если [ошибка/сбой], то система должна [реакция]
+                    </div>
+                    <div class="p-1.5 rounded bg-slate-950/60 border border-slate-800/80">
+                      <span class="text-emerald-400 font-bold">Feature:</span> Где [включена опция], система должна [действие]
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Stop Words & BDD Examples -->
+              <div class="space-y-3">
+                <div class="p-3.5 rounded-xl bg-slate-900 border border-slate-800">
+                  <span class="text-xs font-bold text-white uppercase block mb-2">BDD / Gherkin (Стыковка с QA)</span>
+                  <div class="p-2.5 rounded bg-slate-950 font-mono text-[11px] text-slate-300 border border-slate-800 space-y-1">
+                    <div><span class="text-teal-400 font-bold">GIVEN:</span> Заказ находится в статусе 'CREATED'</div>
+                    <div><span class="text-teal-400 font-bold">WHEN:</span> Клиент подтверждает оплату в шлюзе</div>
+                    <div><span class="text-teal-400 font-bold">THEN:</span> Сервис переводит статус заказа в 'PAID'</div>
+                    <div><span class="text-teal-400 font-bold">AND:</span> Отправляет событие OrderPaid в очередь Kafka</div>
+                  </div>
+                </div>
+
+                <div class="p-3.5 rounded-xl bg-red-950/20 border border-red-500/30">
+                  <span class="text-xs font-bold text-red-400 uppercase block mb-2">Табу и Стоп-слова (Карл Вигерс)</span>
+                  <ul class="text-xs text-slate-300 space-y-1">
+                    <li class="flex items-center gap-2"><span class="text-red-400 font-bold">✖</span> «Быстро» → заменить на «latency p95 < 200ms»</li>
+                    <li class="flex items-center gap-2"><span class="text-red-400 font-bold">✖</span> «Интуитивно понятно» → заменить на время обучения</li>
+                    <li class="flex items-center gap-2"><span class="text-red-400 font-bold">✖</span> «Включая, но не ограничиваясь / и т.д.» → закрытый список</li>
+                    <li class="flex items-center gap-2"><span class="text-red-400 font-bold">✖</span> Пассивный залог («данные сохраняются») → указать компонент!</li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+          </div>
+        `,
+        notes: `
+          <p><strong>Стандарты ISO/IEC/IEEE 29148:2018 и EARS:</strong></p>
+          <p>Easy Approach to Requirements Syntax (EARS) разработан в Rolls-Royce для исключения двусмысленности в авионике и внедрен по всему миру в критически важных IT-системах.</p>
+          <p class="mt-2"><strong>Правило модальности:</strong> Использовать исключительно «Должна» (Shall) для требований, неисполнение которых блокирует релиз (RFC 2119).</p>
+        `
+      },
+      {
+        id: 7,
+        title: "Критерии полноты требований (Вопрос 5)",
+        subtitle: "Инженерная проверка: 9 метрик качества, CRUD и краевые сценарии",
+        roleCategory: "sa",
+        badge: "Верификация качества",
+        render: () => `
+          <div class="space-y-4 my-auto">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <!-- 9 Quality Attributes -->
+              <div class="p-4 rounded-xl bg-slate-900 border border-slate-800 space-y-2">
+                <span class="text-xs font-bold text-indigo-400 uppercase">9 Метрик качества (IEEE 830)</span>
+                <div class="grid grid-cols-1 gap-1 text-[11px] text-slate-300">
+                  <div class="p-1 rounded bg-slate-950/60">• Корректность (Correctness)</div>
+                  <div class="p-1 rounded bg-slate-950/60">• Однозначность (Unambiguity)</div>
+                  <div class="p-1 rounded bg-slate-950/60">• Полнота (Completeness: нет TBD)</div>
+                  <div class="p-1 rounded bg-slate-950/60">• Непротиворечивость (Consistency)</div>
+                  <div class="p-1 rounded bg-slate-950/60">• Приоритезируемость (MoSCoW)</div>
+                  <div class="p-1 rounded bg-slate-950/60">• Проверяемость / Тестируемость</div>
+                  <div class="p-1 rounded bg-slate-950/60">• Модифицируемость</div>
+                  <div class="p-1 rounded bg-slate-950/60">• Прослеживаемость (Traceability)</div>
+                </div>
+              </div>
+
+              <!-- CRUD Matrix Technique -->
+              <div class="p-4 rounded-xl bg-slate-900 border border-slate-800 space-y-2">
+                <span class="text-xs font-bold text-sky-400 uppercase">CRUD-анализ сущностей</span>
+                <p class="text-[11px] text-slate-400">
+                  Каждая сущность модели данных должна иметь полный жизненный цикл. Если сущность создается, но нет сценария ее закрытия/архивации — требования не полны!
+                </p>
+                <div class="p-2 rounded bg-slate-950 border border-slate-800 font-mono text-[10px] space-y-1 text-slate-300">
+                  <div class="flex justify-between text-slate-400 border-b border-slate-800 pb-1">
+                    <span>Сущность</span><span>C</span><span>R</span><span>U</span><span>D</span>
+                  </div>
+                  <div class="flex justify-between"><span>Пользователь</span><span class="text-emerald-400">✓</span><span class="text-emerald-400">✓</span><span class="text-emerald-400">✓</span><span class="text-red-400">GAP!</span></div>
+                  <div class="flex justify-between"><span>Заказ</span><span class="text-emerald-400">✓</span><span class="text-emerald-400">✓</span><span class="text-emerald-400">✓</span><span class="text-emerald-400">✓</span></div>
+                </div>
+                <span class="text-[10px] text-amber-300 block">GAP: Найти потерянный сценарий удаления по GDPR.</span>
+              </div>
+
+              <!-- Negative Paths & Fit Criteria -->
+              <div class="p-4 rounded-xl bg-slate-900 border border-slate-800 space-y-2">
+                <span class="text-xs font-bold text-amber-400 uppercase">Обязательные Sad Paths</span>
+                <p class="text-[11px] text-slate-400">
+                  Спецификация завершена только тогда, когда для каждого Happy Path описаны 3 уровня сбоев:
+                </p>
+                <ul class="text-[11px] text-slate-300 space-y-1">
+                  <li class="flex items-start gap-1"><span class="text-amber-400 font-bold">1.</span> <strong>Валидация:</strong> некорректный формат, пустые поля, спецсимволы.</li>
+                  <li class="flex items-start gap-1"><span class="text-amber-400 font-bold">2.</span> <strong>Бизнес-отказ:</strong> исчерпан кредитный лимит, статус сущности заблокирован.</li>
+                  <li class="flex items-start gap-1"><span class="text-amber-400 font-bold">3.</span> <strong>Инфраструктура:</strong> Timeout 504, повторные пакеты (идемпотентность).</li>
+                </ul>
+              </div>
+            </div>
+
+            <!-- Ultimate Definition of Ready -->
+            <div class="p-3.5 rounded-xl bg-indigo-950/20 border border-indigo-500/30 text-xs flex items-center justify-between">
+              <span class="text-slate-300">
+                <strong>Критерий готовности (DoR):</strong> Требования полны, если QA-инженер пишет 100% тест-кейсов без дополнительных вопросов «А что делать, если...?».
+              </span>
+              <span class="text-indigo-400 font-mono text-[11px]">Fit Criteria</span>
+            </div>
+          </div>
+        `,
+        notes: `
+          <p><strong>Полнота требований по Вигерсу и IEEE 830:</strong></p>
+          <p>«Полнота» — самый дорогой дефект. Исправление пропущенного требования на этапе продакшена обходится в 50–200 раз дороже, чем на этапе анализа.</p>
+          <p class="mt-2"><strong>Практика:</strong> Применение матриц CRUD и таблиц решений (Decision Tables) гарантирует отсутствие логических дыр в булевых условиях.</p>
+        `
+      },
+      {
+        id: 8,
+        title: "Архитектурный маппинг: Определение систем и модулей (Вопрос 6)",
+        subtitle: "Как сопоставить шаг BPMN с микросервисом или подсистемой?",
+        roleCategory: "sa",
+        badge: "DDD & Solution Architecture",
+        render: () => `
+          <div class="space-y-4 my-auto">
+            <div class="text-xs text-slate-400">
+              Выбор целевой информационной системы или сервиса осуществляется на стыке системного анализа и архитектуры через 4 инженерных фильтра:
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-3 text-xs">
+              <!-- Filter 1 -->
+              <div class="p-3.5 rounded-xl bg-slate-900 border border-slate-800 space-y-2">
+                <span class="text-xs font-bold text-amber-400 uppercase">1. Capability Map</span>
+                <p class="text-[11px] text-slate-300">
+                  Сопоставление шага процесса с устойчивой бизнес-способностью компании (TOGAF / BIZBOK):
+                </p>
+                <div class="p-2 rounded bg-slate-950 text-[10px] text-slate-400 space-y-1">
+                  <div>Складской учет → WMS</div>
+                  <div>Управление клиентами → CRM</div>
+                  <div>Финансы и проводки → ERP</div>
+                </div>
+              </div>
+
+              <!-- Filter 2 -->
+              <div class="p-3.5 rounded-xl bg-slate-900 border border-slate-800 space-y-2">
+                <span class="text-xs font-bold text-sky-400 uppercase">2. Bounded Context</span>
+                <p class="text-[11px] text-slate-300">
+                  Принцип смысловых границ понятий из Domain-Driven Design (Эрик Эванс):
+                </p>
+                <div class="p-2 rounded bg-slate-950 text-[10px] text-slate-400 space-y-1">
+                  <div>«Клиент» (паспорт) → Auth</div>
+                  <div>«Получатель» (адрес) → Delivery</div>
+                  <div>«Плательщик» (баланс) → Billing</div>
+                </div>
+              </div>
+
+              <!-- Filter 3 -->
+              <div class="p-3.5 rounded-xl bg-slate-900 border border-slate-800 space-y-2">
+                <span class="text-xs font-bold text-indigo-400 uppercase">3. Source of Truth</span>
+                <p class="text-[11px] text-slate-300">
+                  Одни и те же мастер-данные не должны изменяться в двух разных системах (System of Record).
+                </p>
+                <div class="p-2 rounded bg-slate-950 text-[10px] text-slate-400">
+                  Остатки товара списываются только в WMS, а не на фронтенде витрины.
+                </div>
+              </div>
+
+              <!-- Filter 4 -->
+              <div class="p-3.5 rounded-xl bg-slate-900 border border-slate-800 space-y-2">
+                <span class="text-xs font-bold text-teal-400 uppercase">4. Драйверы NFR</span>
+                <p class="text-[11px] text-slate-300">
+                  Вынесение функционала в отдельный модуль по нефункциональным требованиям:
+                </p>
+                <div class="p-2 rounded bg-slate-950 text-[10px] text-slate-400 space-y-1">
+                  <div>PCI-DSS аудит → Card Vault</div>
+                  <div>CPU Heavy (PDF) → Worker</div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Summary Flow -->
+            <div class="p-3 rounded-lg bg-slate-900/80 border border-slate-800 text-xs text-slate-300">
+              <span class="text-sky-300 font-bold">Вывод для аналитика:</span> Модуль определяется не «по интуиции разработчика», а на основании доминирующей семантики данных, ответственности за мастер-записи и требований безопасности/нагрузки.
+            </div>
+          </div>
+        `,
+        notes: `
+          <p><strong>Domain-Driven Design (DDD) & Маппинг архитектуры:</strong></p>
+          <p>Ошибочное распределение шагов процесса ведет к архитектурному антипаттерну «Распределенный монолит» (Distributed Monolith), когда модули тесно связаны через общие БД.</p>
+          <p class="mt-2">СА совместно с Архитектором проверяет, чтобы каждый Bounded Context владел собственной базой данных и взаимодействовал через четкие контракты (REST/gRPC/Kafka).</p>
+        `
+      },
+      {
+        id: 9,
+        title: "Сквозной практический кейс: E-Commerce & Финтех",
+        subtitle: "Разбор шагов от бизнес-цели до распределения по микросервисам",
+        roleCategory: "both",
+        badge: "Инженерный практикум",
+        render: () => `
+          <div class="space-y-4 my-auto">
+            <div class="flex items-center justify-between text-xs text-slate-400">
+              <span>Кейс: «Оформление покупки с промокодом и онлайн-оплатой»</span>
+              <span class="font-mono text-indigo-400">Cross-Functional Trace</span>
+            </div>
+
+            <!-- Visual Pipeline -->
+            <div class="space-y-2">
+              <div class="grid grid-cols-1 md:grid-cols-5 gap-2 text-xs">
+                
+                <div class="p-2.5 rounded-lg bg-slate-900 border border-slate-800">
+                  <div class="text-[10px] text-amber-400 font-bold mb-1">Шаг 1 (BPMN)</div>
+                  <div class="font-semibold text-white text-[11px] mb-1">Добавить в корзину</div>
+                  <div class="text-[10px] text-slate-400">Модуль: <strong>Cart Service</strong></div>
+                  <div class="text-[9px] text-slate-500 mt-1">NFR: Latency < 50ms</div>
+                </div>
+
+                <div class="p-2.5 rounded-lg bg-slate-900 border border-slate-800">
+                  <div class="text-[10px] text-amber-400 font-bold mb-1">Шаг 2 (BPMN)</div>
+                  <div class="font-semibold text-white text-[11px] mb-1">Применить промокод</div>
+                  <div class="text-[10px] text-slate-400">Модуль: <strong>Pricing Engine</strong></div>
+                  <div class="text-[9px] text-slate-500 mt-1">BRULE: -15% на первый заказ</div>
+                </div>
+
+                <div class="p-2.5 rounded-lg bg-slate-900 border border-slate-800">
+                  <div class="text-[10px] text-sky-400 font-bold mb-1">Шаг 3 (BPMN)</div>
+                  <div class="font-semibold text-white text-[11px] mb-1">Списать оплату</div>
+                  <div class="text-[10px] text-slate-400">Модуль: <strong>Payment Gateway</strong></div>
+                  <div class="text-[9px] text-slate-500 mt-1">PCI-DSS, Идемпотентность</div>
+                </div>
+
+                <div class="p-2.5 rounded-lg bg-slate-900 border border-slate-800">
+                  <div class="text-[10px] text-sky-400 font-bold mb-1">Шаг 4 (BPMN)</div>
+                  <div class="font-semibold text-white text-[11px] mb-1">Резерв на складе</div>
+                  <div class="text-[10px] text-slate-400">Модуль: <strong>WMS / Inventory</strong></div>
+                  <div class="text-[9px] text-slate-500 mt-1">System of Record</div>
+                </div>
+
+                <div class="p-2.5 rounded-lg bg-slate-900 border border-slate-800">
+                  <div class="text-[10px] text-sky-400 font-bold mb-1">Шаг 5 (BPMN)</div>
+                  <div class="font-semibold text-white text-[11px] mb-1">Выдать чек и Push</div>
+                  <div class="text-[10px] text-slate-400">Модуль: <strong>Notify + 54-ФЗ</strong></div>
+                  <div class="text-[9px] text-slate-500 mt-1">Event-Driven (Асинхронно)</div>
+                </div>
+
+              </div>
+            </div>
+
+            <!-- Code Specification Fragment -->
+            <div class="p-3.5 rounded-xl bg-slate-950 border border-slate-800 font-mono text-[11px]">
+              <div class="text-slate-400 mb-1 flex items-center justify-between">
+                <span>Системная спецификация контракта (SA: OpenAPI Fragment)</span>
+                <span class="text-teal-400">POST /api/v1/payments/charge</span>
+              </div>
+              <pre class="text-slate-300 overflow-x-auto text-[10px] leading-relaxed">
+{
+  "order_id": "ord_8921a-4f",
+  "customer_id": "usr_99182",
+  "amount": { "value": 4500.00, "currency": "RUB" },
+  "idempotency_key": "7b89f-291c-4b6a-9311",
+  "validation_rules": ["CHECK_ACTIVE_SESSION", "CHECK_KYC_STATUS"]
+}</pre>
+            </div>
+          </div>
+        `,
+        notes: `
+          <p><strong>Сквозной кейс:</strong></p>
+          <p>Обратите внимание на распределение: БА зафиксировал шаги клиентского пути и правила скидок (Pricing Engine), а СА специфицировал точные контракты с учетом идемпотентности (Payment Gateway) и асинхронной фискализации чеков через Kafka.</p>
+        `
+      },
+      {
+        id: 10,
+        title: "Итоговый чек-лист и Академическая литература",
+        subtitle: "Золотой стандарт проверки спецификации перед отправкой в разработку",
+        roleCategory: "both",
+        badge: "Заключение",
+        render: () => `
+          <div class="space-y-4 my-auto">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
+              
+              <!-- Checklist -->
+              <div class="p-4 rounded-xl bg-slate-900 border border-slate-800 space-y-2">
+                <span class="text-xs font-bold text-white uppercase block">Чек-лист готовности спецификации (DoR)</span>
+                <ul class="space-y-1.5 text-slate-300">
+                  <li class="flex items-center gap-2">
+                    <input type="checkbox" checked disabled class="rounded text-indigo-500">
+                    <span>Бизнес-цель сформулирована измеримо (KPI/ROI)</span>
+                  </li>
+                  <li class="flex items-center gap-2">
+                    <input type="checkbox" checked disabled class="rounded text-indigo-500">
+                    <span>Бизнес-правила (BRULE) отделены от процессов</span>
+                  </li>
+                  <li class="flex items-center gap-2">
+                    <input type="checkbox" checked disabled class="rounded text-indigo-500">
+                    <span>Глоссарий согласован между бизнесом и разработкой</span>
+                  </li>
+                  <li class="flex items-center gap-2">
+                    <input type="checkbox" checked disabled class="rounded text-indigo-500">
+                    <span>Каждое требование написано по стандарту EARS/ISO</span>
+                  </li>
+                  <li class="flex items-center gap-2">
+                    <input type="checkbox" checked disabled class="rounded text-indigo-500">
+                    <span>Проведен CRUD-анализ сущностей модели данных</span>
+                  </li>
+                  <li class="flex items-center gap-2">
+                    <input type="checkbox" checked disabled class="rounded text-indigo-500">
+                    <span>Описаны все негативные сценарии (Sad Paths & Timeouts)</span>
+                  </li>
+                </ul>
+              </div>
+
+              <!-- References -->
+              <div class="p-4 rounded-xl bg-slate-900 border border-slate-800 space-y-2">
+                <span class="text-xs font-bold text-indigo-400 uppercase block">Профильная литература & Стандарты</span>
+                <ul class="space-y-1.5 text-[11px] text-slate-300">
+                  <li class="flex items-start gap-1.5">
+                    <span class="text-indigo-400 font-bold">1.</span>
+                    <span><strong>BABOK® Guide v3</strong> — IIBA (Свод знаний по бизнес-анализу).</span>
+                  </li>
+                  <li class="flex items-start gap-1.5">
+                    <span class="text-indigo-400 font-bold">2.</span>
+                    <span><strong>Карл Вигерс, Джой Битти</strong> — «Разработка требований к ПО».</span>
+                  </li>
+                  <li class="flex items-start gap-1.5">
+                    <span class="text-indigo-400 font-bold">3.</span>
+                    <span><strong>ISO/IEC/IEEE 29148:2018</strong> — Requirements engineering processes.</span>
+                  </li>
+                  <li class="flex items-start gap-1.5">
+                    <span class="text-indigo-400 font-bold">4.</span>
+                    <span><strong>Алистер Коберн</strong> — «Современные методы описания Use Cases».</span>
+                  </li>
+                  <li class="flex items-start gap-1.5">
+                    <span class="text-indigo-400 font-bold">5.</span>
+                    <span><strong>А. А. Цветков</strong> — «Теория и практика бизнес-анализа в ИТ».</span>
+                  </li>
+                  <li class="flex items-start gap-1.5">
+                    <span class="text-indigo-400 font-bold">6.</span>
+                    <span><strong>Эрик Эванс</strong> — «Domain-Driven Design (Предметно-ориентированное проектирование)».</span>
+                  </li>
+                </ul>
+              </div>
+
+            </div>
+
+            <!-- Closing banner -->
+            <div class="p-3.5 rounded-xl bg-gradient-to-r from-indigo-900/40 via-purple-900/30 to-sky-900/40 border border-indigo-500/30 text-center text-xs text-slate-200">
+              Совместная работа BA и SA — залог создания полезного бизнесу и архитектурно чистого продукта.
+            </div>
+          </div>
+        `,
+        notes: `
+          <p><strong>Финальный аккорд:</strong></p>
+          <p>В соответствии с рекомендациями главы 5.2 книги Цветкова, завершающий этап презентации включает ответы на вопросы аудитории и сбор обратной связи для непрерывного улучшения процессов проектной команды.</p>
+        `
+      }
+    ];
+
+    // State Variables
+    let currentSlideIndex = 0;
+    let currentFilter = 'all'; // 'all', 'ba', 'sa'
+    let isNotesOpen = false;
+
+    // Filtered slides getter
+    function getFilteredSlides() {
+      if (currentFilter === 'all') return slidesData;
+      return slidesData.filter(slide => slide.roleCategory === currentFilter || slide.roleCategory === 'both');
+    }
+
+    // Render Function
+    function renderCurrentSlide() {
+      const filtered = getFilteredSlides();
+      if (currentSlideIndex >= filtered.length) currentSlideIndex = filtered.length - 1;
+      if (currentSlideIndex < 0) currentSlideIndex = 0;
+
+      const slide = filtered[currentSlideIndex];
+      const stage = document.getElementById('slide-stage');
+      
+      // Role Badge calculation
+      let roleBadgeHtml = '';
+      if (slide.roleCategory === 'ba') {
+        roleBadgeHtml = `<span class="px-2.5 py-1 rounded-full text-xs font-semibold bg-amber-500/10 text-amber-300 border border-amber-500/30">Роль: Только Бизнес-аналитик (BA)</span>`;
+      } else if (slide.roleCategory === 'sa') {
+        roleBadgeHtml = `<span class="px-2.5 py-1 rounded-full text-xs font-semibold bg-sky-500/10 text-sky-300 border border-sky-500/30">Роль: Только Системный аналитик (SA)</span>`;
+      } else {
+        roleBadgeHtml = `<span class="px-2.5 py-1 rounded-full text-xs font-semibold bg-indigo-500/10 text-indigo-300 border border-indigo-500/30">Роль: Коллаборация BA & SA</span>`;
+      }
+
+      stage.innerHTML = `
+        <!-- Top Metadata Header -->
+        <div class="flex flex-wrap items-center justify-between gap-2 border-b border-slate-800 pb-4 mb-4">
+          <div>
+            <div class="flex items-center gap-2 mb-1">
+              <span class="text-xs font-mono font-bold text-indigo-400 uppercase tracking-widest">${slide.badge}</span>
+              <span class="text-slate-600">•</span>
+              ${roleBadgeHtml}
+            </div>
+            <h3 class="text-xl md:text-2xl font-bold text-white tracking-tight">${slide.title}</h3>
+            <p class="text-xs md:text-sm text-slate-400">${slide.subtitle}</p>
+          </div>
+        </div>
+
+        <!-- Dynamic Body Content -->
+        <div class="flex-1 flex flex-col justify-center">
+          ${slide.render()}
+        </div>
+      `;
+
+      // Update counters
+      document.getElementById('current-slide-num').innerText = currentSlideIndex + 1;
+      document.getElementById('total-slides-num').innerText = filtered.length;
+
+      // Update speaker notes
+      document.getElementById('notes-content').innerHTML = slide.notes;
+
+      // Update pagination buttons
+      document.getElementById('btn-prev').disabled = currentSlideIndex === 0;
+      document.getElementById('btn-next').disabled = currentSlideIndex === filtered.length - 1;
+
+      renderProgressDots(filtered.length);
+    }
+
+    function renderProgressDots(total) {
+      const container = document.getElementById('progress-dots');
+      container.innerHTML = '';
+      for (let i = 0; i < total; i++) {
+        const dot = document.createElement('div');
+        dot.className = `h-1.5 rounded-full transition-all cursor-pointer ${
+          i === currentSlideIndex 
+            ? 'w-7 bg-indigo-500' 
+            : 'w-2 bg-slate-800 hover:bg-slate-700'
+        }`;
+        dot.title = `Слайд ${i + 1}`;
+        dot.onclick = () => {
+          currentSlideIndex = i;
+          renderCurrentSlide();
+        };
+        container.appendChild(dot);
+      }
+    }
+
+    // Navigation Controls
+    function nextSlide() {
+      const filtered = getFilteredSlides();
+      if (currentSlideIndex < filtered.length - 1) {
+        currentSlideIndex++;
+        renderCurrentSlide();
+      }
+    }
+
+    function prevSlide() {
+      if (currentSlideIndex > 0) {
+        currentSlideIndex--;
+        renderCurrentSlide();
+      }
+    }
+
+    function setRoleFilter(filter) {
+      currentFilter = filter;
+      currentSlideIndex = 0;
+      
+      // Update UI buttons
+      document.getElementById('filter-all').className = filter === 'all' 
+        ? "px-2.5 py-1 rounded font-medium transition bg-indigo-600 text-white" 
+        : "px-2.5 py-1 rounded font-medium transition text-slate-400 hover:text-white";
+        
+      document.getElementById('filter-ba').className = filter === 'ba' 
+        ? "px-2.5 py-1 rounded font-medium transition bg-amber-600 text-white" 
+        : "px-2.5 py-1 rounded font-medium transition text-amber-300 hover:text-white";
+
+      document.getElementById('filter-sa').className = filter === 'sa' 
+        ? "px-2.5 py-1 rounded font-medium transition bg-sky-600 text-white" 
+        : "px-2.5 py-1 rounded font-medium transition text-sky-300 hover:text-white";
+
+      renderCurrentSlide();
+    }
+
+    function toggleSpeakerNotes() {
+      const panel = document.getElementById('speaker-notes-panel');
+      isNotesOpen = !isNotesOpen;
+      if (isNotesOpen) {
+        panel.classList.remove('hidden');
+      } else {
+        panel.classList.add('hidden');
+      }
+    }
+
+    function toggleFullscreen() {
+      if (!document.fullscreenElement) {
+        document.documentElement.requestFullscreen().catch(() => {});
+      } else {
+        if (document.exitFullscreen) {
+          document.exitFullscreen();
+        }
+      }
+    }
+
+    // Keyboard Shortcuts Listener
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'ArrowRight' || e.key === 'PageDown' || e.key === ' ') {
+        nextSlide();
+      } else if (e.key === 'ArrowLeft' || e.key === 'PageUp') {
+        prevSlide();
+      } else if (e.key.toLowerCase() === 'n') {
+        toggleSpeakerNotes();
+      }
+    });
+
+    // Initialize application on window load
+    window.onload = function() {
+      renderCurrentSlide();
+    };
+  </script>
+</body>
+</html>
